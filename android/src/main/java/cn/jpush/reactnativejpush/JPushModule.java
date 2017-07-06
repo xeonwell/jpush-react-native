@@ -4,6 +4,7 @@ import android.app.Notification;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.TextUtils;
 
@@ -37,6 +38,8 @@ public class JPushModule extends ReactContextBaseJavaModule {
     private final static String RECEIVE_CUSTOM_MESSAGE = "receivePushMsg";
     private final static String OPEN_NOTIFICATION = "openNotification";
     private final static String RECEIVE_REGISTRATION_ID = "getRegistrationId";
+
+    private final static String SAVED_OPEN_NOTIFICATION_KEY = "Saved_Open_Notification_key";
 
     public JPushModule(ReactApplicationContext reactContext) {
         super(reactContext);
@@ -424,6 +427,23 @@ public class JPushModule extends ReactContextBaseJavaModule {
     }
 
     /**
+     * 获取保存的通知 ， 然后将保存的通知清除
+     * @param callback
+     */
+    @ReactMethod
+    public void getSavedOpenNotification(Callback callback) {
+        ReactApplicationContext context = this.getReactApplicationContext();
+        SharedPreferences preferences = context.getSharedPreferences(TAG, Context.MODE_PRIVATE);
+        String extras = preferences.getString(SAVED_OPEN_NOTIFICATION_KEY, "");
+
+        callback.invoke(extras);
+
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.remove(SAVED_OPEN_NOTIFICATION_KEY);
+        editor.apply();
+    }
+
+    /**
      * Clear all notifications, suggest invoke this method while exiting app.
      */
     @ReactMethod
@@ -501,6 +521,14 @@ public class JPushModule extends ReactContextBaseJavaModule {
                     String alertContent = mCachedBundle.getString(JPushInterface.EXTRA_ALERT);
                     // extra 字段的 json 字符串
                     String extras = mCachedBundle.getString(JPushInterface.EXTRA_EXTRA);
+
+                    // save the extras info
+                    SharedPreferences preferences = context.getSharedPreferences(TAG, Context.MODE_PRIVATE);
+                    SharedPreferences.Editor editor = preferences.edit();
+                    editor.putString(SAVED_OPEN_NOTIFICATION_KEY, extras);
+                    editor.commit();
+
+
                     Intent intent = new Intent();
                     intent.setClassName(context.getPackageName(), context.getPackageName() + ".MainActivity");
                     intent.putExtras(mCachedBundle);
