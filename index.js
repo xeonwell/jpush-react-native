@@ -195,6 +195,12 @@ export default class JPush {
 		listeners[cb] = null;
 	}
 
+	static getSavedOpenNotification(cb) {
+	  JPushModule.getSavedOpenNotification((extras) => {
+	    cb(extras);
+    });
+  }
+
 	/**
 	 * Android
 	 * If device register succeed, the server will return registrationId
@@ -215,7 +221,7 @@ export default class JPush {
 	}
 
 	/**
-	 * iOS,  Android	
+	 * iOS,  Android
 	 */
 	static getRegistrationID(cb) {
 		JPushModule.getRegistrationID((id) => {
